@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Yelp Restaurant Rating Prediction | Aichu Tan</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Machine learning project from BDA 602 by Aichu Tan: predicting Yelp restaurant ratings using metadata, with Random Forest, XGBoost, and K-Prototypes clustering."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- ===== Hero / Header (Dark) ===== -->
+    <header class="hero hero--dark">
+      <div class="container hero__content">
+        <div class="hero__text">
+          <p class="hero__eyebrow">BDA 602 · Machine Learning</p>
+          <h1 class="hero__title">Yelp Restaurant Rating Prediction</h1>
+          <p class="hero__subtitle">
+            Using structured metadata (no review text) to predict which
+            restaurants reach
+            <strong>4★ and above</strong>, and to uncover what really drives
+            customer satisfaction.
+          </p>
+          <div class="hero__tags">
+            <span class="tag">Python</span>
+            <span class="tag">Scikit-learn</span>
+            <span class="tag">MLflow</span>
+            <span class="tag">Random Forest</span>
+            <span class="tag">XGBoost</span>
+            <span class="tag">K-Prototypes</span>
+          </div>
+          <div class="hero__actions">
+            <a
+              class="btn btn--primary"
+              href="https://aichutan.github.io/BDA602_final_yelp_analysis/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              View My GitHub
+            </a>
+            <a
+              class="btn btn--outline"
+              href="https://www.linkedin.com/in/aichutan/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Connect on LinkedIn
+            </a>
+          </div>
+        </div>
+        <div class="hero__highlight-card">
+          <h2 class="highlight-card__title">Project Snapshot</h2>
+          <ul class="highlight-card__list">
+            <li><span>36,261</span> restaurants from the Yelp Open Dataset</li>
+            <li><span>61</span> engineered features using metadata only</li>
+            <li><span>0.79</span> ROC-AUC with Random Forest / XGBoost</li>
+            <li>
+              <span>3 archetypes</span> identified via K-Prototypes clustering
+            </li>
+          </ul>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== Main Content (Light) ===== -->
+    <main class="page">
+      <!-- Overview Section -->
+      <section class="section section--light">
+        <div class="container section__content section__content--split">
+          <div>
+            <h2 class="section__title">Project Overview</h2>
+            <p class="section__lead">
+              Online reviews significantly influence consumer decision-making,
+              and Yelp ratings play a central role in restaurant visibility and
+              reputation. This project evaluates whether structured business
+              metadata, such as price range, amenities, operating hours,
+              categories, and location can predict which restaurants achieve a
+              <strong>≥ 4★</strong> rating without using any review text.
+            </p>
+            <p class="section__text">
+              Using the 2024 Yelp Open Dataset, a modeling table of
+              <strong>36,261 restaurants</strong> and
+              <strong>61 engineered features</strong> was analyzed through a
+              unified Scikit-learn + MLflow workflow. Four supervised models
+              (Logistic Regression, Elastic Net, Random Forest, XGBoost) and
+              <strong>K-Prototypes clustering</strong> were used to understand
+              both predictive performance and natural restaurant archetypes.
+              Across models, review behavior, price range, operating hours, and
+              accessibility-related amenities emerged as consistent drivers of
+              higher ratings, while fast-service attributes (e.g. drive-thru,
+              delivery, certain fast-food categories) were associated with lower
+              scores.
+            </p>
+          </div>
+          <div class="key-metrics">
+            <h3 class="key-metrics__title">Key Questions</h3>
+            <ul class="list list--bullets">
+              <li>
+                Can high-rated restaurants be predicted from metadata alone?
+              </li>
+              <li>Which business attributes most strongly drive ratings?</li>
+              <li>
+                Are there natural “types” of restaurants based on operations and
+                amenities?
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Data & Feature Engineering -->
+      <section class="section section--alt">
+        <div class="container section__content section__content--columns">
+          <div class="section-block">
+            <h2 class="section__title">Data & Feature Engineering</h2>
+            <p class="section__text">
+              The project uses the <strong>2024 Yelp Open Dataset</strong>,
+              combining restaurant metadata from <code>business.json</code> with
+              a subset of <strong>2019–2022 reviews</strong> from
+              <code>review.json</code>. Nested JSON fields for attributes,
+              categories, and hours were flattened to create a clean restaurant-
+              level table with <strong>36,261 rows</strong> and
+              <strong>61 features</strong>.
+            </p>
+            <p class="section__text">
+              Key transformations included extracting operational patterns
+              (total weekly hours, days open, weekend hours), expanding
+              amenities into standardized fields (Wi-Fi, alcohol service, noise
+              level, wheelchair accessibility, dog-friendly policies), and
+              encoding the top restaurant categories. Geographic variation was
+              captured using latitude and longitude. Review data was aggregated
+              to compute log-transformed review count, average review length,
+              and the share of short reviews, with restaurants restricted to
+              those having at least three reviews. All numeric features were
+              scaled and categorical variables one-hot encoded using a unified
+              Scikit-learn
+              <code>ColumnTransformer</code>, and the final dataset was split
+              into an <strong>80/20 train–test</strong> set for MLflow-tracked
+              experiments.
+            </p>
+          </div>
+
+          <div class="section-block section-block--accent">
+            <h3 class="section-block__title">What Was Practiced</h3>
+            <ul class="list list--check">
+              <li>Structured data wrangling and JSON normalization</li>
+              <li>
+                Feature engineering for operations, amenities, and review
+                behavior
+              </li>
+              <li>
+                Leakage-free preprocessing pipelines (imputation, encoding,
+                scaling)
+              </li>
+              <li>RandomizedSearchCV for hyperparameter tuning</li>
+              <li>MLflow tracking for metrics, parameters, and artifacts</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Modeling Approach -->
+      <section class="section section--light">
+        <div class="container section__content">
+          <h2 class="section__title">Modeling Approach</h2>
+
+          <p class="section__lead">
+            The prediction task was framed as a
+            <strong>binary classification problem</strong>, determining whether
+            a restaurant’s average Yelp rating is <strong>≥ 4 stars</strong>.
+            All preprocessing and modeling steps were organized through a
+            unified <strong>Scikit-learn Pipeline</strong> to ensure
+            consistency, prevent data leakage, and enable reproducible
+            MLflow-tracked experiments.
+          </p>
+
+          <p class="section__text">
+            Both linear and ensemble models were compared to understand how
+            structured metadata relates to rating outcomes. Logistic Regression
+            and Elastic Net served as interpretable baselines, while Random
+            Forest and XGBoost captured nonlinear interactions across amenities,
+            operating patterns, pricing, and review behavior. Model selection
+            and tuning were performed using
+            <strong>5-fold stratified cross-validation</strong> with randomized
+            hyperparameter search, optimizing primarily for ROC-AUC and
+            F1-score.
+          </p>
+
+          <!-- Three Model Cards -->
+          <div class="grid grid--3">
+            <!-- Preprocessing Card -->
+            <article class="card">
+              <h3 class="card__title">Preprocessing</h3>
+              <ul class="list list--bullets">
+                <li>80/20 train–test split with stratification</li>
+                <li>Numeric features: median imputation + MinMax scaling</li>
+                <li>
+                  Categorical & boolean fields: one-hot or ordinal encoding
+                </li>
+                <li>
+                  All transformations executed within a
+                  <code>ColumnTransformer</code> + <code>Pipeline</code> to
+                  ensure leakage-free preprocessing
+                </li>
+              </ul>
+            </article>
+
+            <!-- Supervised Models Card -->
+            <article class="card">
+              <h3 class="card__title">Supervised Models</h3>
+              <ul class="list list--bullets">
+                <li>Logistic Regression (baseline interpretability)</li>
+                <li>Elastic Net (L1/L2 regularization)</li>
+                <li>Random Forest (nonlinear interactions)</li>
+                <li>XGBoost (gradient boosting)</li>
+              </ul>
+              <p class="card__footnote">
+                Hyperparameters tuned using <strong>RandomizedSearchCV</strong>
+                with 5-fold CV.
+              </p>
+            </article>
+
+            <!-- Unsupervised Model Card -->
+            <article class="card">
+              <h3 class="card__title">Unsupervised Model</h3>
+              <p class="card__text">
+                <strong>K-Prototypes clustering</strong> was applied to identify
+                natural restaurant archetypes across mixed numerical and
+                categorical features.
+              </p>
+              <ul class="list list--bullets">
+                <li>Elbow method supported <code>k = 3</code></li>
+                <li>PCA projection used to visualize separation</li>
+                <li>Clusters: family-casual, social dining, upscale formats</li>
+              </ul>
+            </article>
+          </div>
+          <!-- end of 3-column grid -->
+
+          <!-- Full-Width Pipeline Card -->
+          <article class="card" style="margin-top: 1.7rem">
+            <h3 class="card__title">ML Pipeline</h3>
+
+            <p class="card__text">
+              The end-to-end machine learning workflow was implemented using a
+              unified Scikit-learn pipeline, enabling consistent preprocessing
+              across folds, reproducible experiment execution, and streamlined
+              integration with MLflow.
+            </p>
+
+            <ul class="list list--bullets">
+              <li>ColumnTransformer for imputation, scaling, and encoding</li>
+              <li>Pipeline linking preprocessing → model training</li>
+              <li>5-fold stratified cross-validation</li>
+              <li>RandomizedSearchCV hyperparameter tuning</li>
+              <li>Comprehensive MLflow logging and comparison</li>
+            </ul>
+
+            <!-- Pipeline Diagram -->
+            <div
+              class="pipeline-visual"
+              style="margin-top: 1.3rem; text-align: center"
+            >
+              <img
+                src="assets/pipeline.png"
+                alt="Scikit-learn preprocessing and modeling pipeline diagram"
+                style="
+                  max-width: 100%;
+                  border-radius: 10px;
+                  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.18);
+                "
+              />
+              <p
+                class="visual-caption"
+                style="
+                  font-size: 0.85rem;
+                  color: var(--color-text-muted);
+                  margin-top: 0.6rem;
+                "
+              >
+                Unified Scikit-learn pipeline combining imputation, encoding,
+                scaling, and model training through a ColumnTransformer and
+                Pipeline.
+              </p>
+            </div>
+          </article>
+
+          <p class="section__text" style="margin-top: 1.5rem">
+            Model performance was assessed using accuracy, precision, recall,
+            F1-score, and ROC-AUC. Ensemble methods outperformed linear
+            baselines, indicating that Yelp metadata contains nonlinear patterns
+            that tree-based models capture more effectively.
+          </p>
+        </div>
+      </section>
+
+      <!-- Results & Insights -->
+      <section class="section section--alt">
+        <div class="container section__content">
+          <h2 class="section__title">Results & Insights</h2>
+
+          <!-- Model Evaluation -->
+          <div class="grid grid--2">
+            <div>
+              <h3 class="subheading">Model Evaluation and Comparison</h3>
+              <p class="section__text">
+                Four supervised models: Logistic Regression, Elastic Net, Random
+                Forest, and XGBoost were evaluated using a unified Scikit-learn
+                pipeline with stratified 5-fold cross-validation. Ensemble
+                models outperformed linear baselines, confirming that Yelp
+                metadata contains nonlinear interactions across amenities,
+                pricing, operating hours, and review behavior.
+              </p>
+              <p class="section__text">
+                XGBoost achieved the highest accuracy, while Random Forest
+                delivered the strongest F1-score and matched XGBoost’s ROC-AUC,
+                offering a balanced combination of predictive power and
+                interpretability.
+              </p>
+            </div>
+            <article class="card">
+              <h3 class="card__title">Model Performance Comparison</h3>
+              <img
+                src="assets/metrics.png"
+                alt="Model comparison table showing accuracy, F1-score, and ROC-AUC"
+                class="visual-image"
+                style="max-width: 100%"
+              />
+              <p class="visual-caption">
+                Performance of Logistic Regression, Elastic Net, Random Forest,
+                and XGBoost on accuracy, F1-score, and ROC-AUC.
+              </p>
+            </article>
+          </div>
+
+          <!-- Feature Importance -->
+          <div class="grid grid--2" style="margin-top: 2rem">
+            <div>
+              <h3 class="subheading">Feature Importance & Interpretability</h3>
+              <p class="section__text">
+                Random Forest feature importance ranked review-behavior
+                variables mean review length, log-transformed review count, and
+                the share of short reviews as the strongest predictors.
+                Operational and amenity features such as wheelchair
+                accessibility, table service, dog-friendly policies, and
+                reliable hours were positively associated with high ratings,
+                while fast-service features such as drive-thru, delivery, and
+                fast-food categories were linked to lower ratings. Logistic
+                Regression coefficients reinforced these directional effects.
+              </p>
+            </div>
+            <article class="card">
+              <h3 class="card__title">Random Forest Feature Importance</h3>
+              <img
+                src="assets/RF_feature_importance.png"
+                alt="Top features ranked by Random Forest model importance"
+                class="visual-image"
+                style="max-width: 100%"
+              />
+              <p class="visual-caption">
+                Random Forest importance values highlight review patterns,
+                amenities, and operating choices as key predictors of restaurant
+                ratings.
+              </p>
+            </article>
+          </div>
+
+          <!-- Clustering -->
+          <h3 class="subheading" style="margin-top: 2rem">
+            Clustering Insights
+          </h3>
+          <p class="section__text">
+            K-Prototypes clustering revealed three distinct restaurant
+            archetypes within the Yelp dataset. Cluster 1, the highest-rated
+            group, consisted of value-oriented, accessible, family-casual venues
+            emphasizing comfort and inclusivity. Cluster 0, representing
+            mid-rated restaurants, reflected social dining environments
+            characterized by alcohol or happy-hour offerings, moderate noise
+            levels, and table service. Cluster 2, the lowest-rated segment,
+            captured mid-to-upscale dining formats where higher prices and
+            reservations did not always meet customer expectations, resulting in
+            noticeable expectation–value gaps. These clusters closely aligned
+            with supervised model findings and highlight how operational and
+            service characteristics shape Yelp performance.
+          </p>
+
+          <!-- Final Takeaways -->
+          <h3 class="subheading" style="margin-top: 1.5rem">Key Takeaways</h3>
+          <ul class="list list--check">
+            <li>
+              Metadata alone can predict Yelp ratings with strong accuracy
+              (ROC-AUC ≈ 0.79).
+            </li>
+            <li>
+              Comfort, accessibility, and consistent operations matter as much
+              as cuisine type.
+            </li>
+            <li>
+              Fast-service models tend to score lower unless balanced by good
+              amenities.
+            </li>
+            <li>
+              Small operational changes (Wi-Fi, clear hours, accessibility) can
+              boost ratings and customer satisfaction.
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Skills & Tools -->
+      <section class="section section--light">
+        <div class="container section__content">
+          <h2 class="section__title">Skills Demonstrated</h2>
+          <div class="grid grid--3">
+            <div class="pill-group">
+              <h3 class="pill-group__title">Machine Learning</h3>
+              <div class="pill-group__pills">
+                <span class="pill">Supervised learning</span>
+                <span class="pill">Ensemble methods</span>
+                <span class="pill">Model tuning & CV</span>
+                <span class="pill">Evaluation metrics</span>
+              </div>
+            </div>
+
+            <div class="pill-group">
+              <h3 class="pill-group__title">Data Engineering</h3>
+              <div class="pill-group__pills">
+                <span class="pill">Feature engineering</span>
+                <span class="pill">Handling skew</span>
+                <span class="pill">Categorical encoding</span>
+                <span class="pill">Imputation & scaling</span>
+              </div>
+            </div>
+
+            <div class="pill-group">
+              <h3 class="pill-group__title">Tools & Stack</h3>
+              <div class="pill-group__pills">
+                <span class="pill">Python</span>
+                <span class="pill">Pandas</span>
+                <span class="pill">Scikit-learn</span>
+                <span class="pill">XGBoost</span>
+                <span class="pill">MLflow</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- My Role & Authors -->
+    <section class="section section--alt">
+      <div class="container section__content section__content--columns">
+        <div class="section-block">
+          <h2 class="section__title">My Role & Contributions</h2>
+          <p class="section__text">
+            This project was completed as part of
+            <strong>BDA 602: Machine Learning</strong>. Our team collaborated on
+            data cleaning and preprocessing, while I led the feature
+            engineering, XGBoost modeling, and the end-to-end machine learning
+            workflow. I also integrated and refined all model components,
+            resolved technical issues, and implemented a unified MLflow tracking
+            system to ensure that the entire pipeline, from data preparation to
+            model comparison, was consistent, reproducible, and well-documented.
+          </p>
+        </div>
+        <div class="section-block section-block--accent">
+          <div>
+            <h3>Resources & Downloads</h3>
+            <ul class="nice-list">
+              <li>
+                <a href="assets/report.pdf" target="_blank"
+                  >Full Capstone Report (PDF)</a
+                >
+              </li>
+              <li>
+                <a href="https://www.linkedin.com/in/aichutan/" target="_blank"
+                  >My Linkedin</a
+                >
+              </li>
+              <li>
+                <a
+                  href="https://github.com/AichuTan/BDA602_final_yelp_analysis"
+                  target="_blank"
+                  >GitHub Repository (Code & Notebooks)</a
+                >
+              </li>
+              <li>
+                <a href="https://aichutan.github.io/" target="_blank"
+                  >My Full Portfolio</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Footer (Dark) ===== -->
+    <footer class="footer footer--dark">
+      <div class="container footer__content">
+        <div class="footer__info">
+          <p class="footer__name">Aichu Tan</p>
+          <p class="footer__role">
+            © 2025 · M.S. Big Data Analytics · San Diego State University
+          </p>
+        </div>
+
+        <nav class="footer__links" aria-label="Footer navigation">
+          <a href="mailto:thedebbietan@gmail.com">Email</a>
+          <a
+            href="https://www.linkedin.com/in/aichutan/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            LinkedIn
+          </a>
+          <a
+            href="https://github.com/AichuTan"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub
+          </a>
+        </nav>
+      </div>
+    </footer>
+  </body>
+</html>
