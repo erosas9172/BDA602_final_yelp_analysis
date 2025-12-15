@@ -452,6 +452,33 @@ code {
   border-radius: 4px;
 }
 
+/* ======================
+   REPOS SECTION STYLING
+   ====================== */
+
+.repos {
+  margin-top: 3rem;
+}
+
+.repo-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.repo-list li {
+  margin-bottom: 0.75rem;
+}
+
+.repo-list a {
+  text-decoration: none;
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.repo-list a:hover {
+  text-decoration: underline;
+}
+
 /* ==========
    Footer
    ========== */
@@ -549,6 +576,11 @@ code {
     align-items: flex-start;
   }
 }
+
+/* ================
+   Model Table
+   ================ */
+
 .model-table {
   width: 100%;
   border-collapse: collapse;
